@@ -100,6 +100,7 @@
     text-shadow:0 0 18px rgba(212,175,106,0.35);
   }
   .dday-sub{font-family:"Noto Serif TC";font-weight:700;font-size:15px;color:var(--cream);}
+  .dday-hm{display:block;font-family:"Space Mono";font-weight:400;font-size:12px;color:var(--gold-dim);letter-spacing:1px;margin-top:4px;}
 
   /* boarding pass */
   .pass{
@@ -163,6 +164,43 @@
   .badge.purple{background:rgba(165,123,224,0.18);color:var(--purple-tag);border:1px solid rgba(165,123,224,0.4);}
 
   .dotgrp{display:inline-flex;gap:1px;font-size:12px;}
+
+  .expense-box{margin-top:10px;padding:10px 12px;background:rgba(0,0,0,0.15);border:1px dashed var(--navy-line);border-radius:5px;}
+  .exp-total-row{display:flex;align-items:center;gap:8px;margin-bottom:8px;flex-wrap:wrap;}
+  .exp-total-row label{font-family:"Space Mono";font-size:10px;color:var(--cream-dim);letter-spacing:1px;white-space:nowrap;}
+  .exp-total-row input.exp-total{
+    font-family:"Space Mono";font-size:13px;color:var(--gold);
+    background:var(--navy-deep);border:1px solid var(--navy-line);border-radius:4px;
+    padding:5px 8px;width:110px;
+  }
+  .exp-total-row input.exp-total:focus{outline:none;border-color:var(--gold);}
+  .exp-hint{font-family:"Space Mono";font-size:10px;color:var(--gold-dim);}
+  .exp-even-btn{
+    margin-left:auto;font-family:"Space Mono";font-size:10px;color:var(--gold);
+    background:transparent;border:1px solid var(--gold-dim);border-radius:12px;
+    padding:4px 10px;cursor:pointer;
+  }
+  .exp-even-btn:hover{border-color:var(--gold);}
+  .exp-split-row{display:flex;gap:8px;flex-wrap:wrap;}
+  .exp-person-cell{display:flex;flex-direction:column;gap:3px;flex:1;min-width:64px;}
+  .exp-person-cell span{font-family:"Space Mono";font-size:9px;color:var(--cream-dim);}
+  .exp-person-cell input{
+    font-family:"Space Mono";font-size:12px;color:var(--cream);
+    background:var(--navy-deep);border:1px solid var(--navy-line);border-radius:4px;
+    padding:5px 6px;width:100%;
+  }
+  .exp-person-cell input:focus{outline:none;border-color:var(--gold);}
+  .exp-person-cell input[readonly]{color:var(--cream-dim);background:rgba(255,255,255,0.02);}
+
+  .summary-total{display:flex;align-items:baseline;gap:10px;flex-wrap:wrap;padding-bottom:12px;border-bottom:1px dashed var(--navy-line);margin-bottom:12px;}
+  .summary-total span:first-child{font-family:"Noto Sans TC";font-size:12px;color:var(--cream-dim);}
+  #sumTotalKrw{font-family:"Space Mono";font-weight:700;font-size:20px;color:var(--gold);}
+  .summary-twd{font-family:"Space Mono";font-size:11px;color:var(--cream-dim);}
+  .summary-person-row{display:flex;justify-content:space-between;align-items:center;padding:9px 2px;border-bottom:1px solid var(--navy-line);}
+  .summary-person-row:last-child{border-bottom:none;}
+  .summary-person-row .name{font-family:"Noto Sans TC";font-size:14px;color:var(--cream);}
+  .summary-person-row .amt{font-family:"Space Mono";font-size:13px;color:var(--gold);}
+  .summary-person-row .amt-twd{font-family:"Space Mono";font-size:10px;color:var(--cream-dim);margin-left:6px;}
 
   .tool-card{
     background:var(--navy-panel);
@@ -240,7 +278,7 @@
 <div class="wrap">
 
   <div class="masthead">
-    <h1>釜爾追星・宅宅行</h1>
+    <h1>LASSGO PLAVE</h1>
     <div class="route">PUS ⇄ SEL · 09.08 – 09.16</div>
   </div>
 
@@ -266,56 +304,69 @@ function dots(colors){
   return '<span class="dotgrp">' + colors.map(c=>map[c]).join('') + '</span>';
 }
 
+// ---- local persistence (per device / browser only) ----
+const LS_PREFIX = 'lassgo-plave-trip:';
+function lsGet(key){
+  try{ return localStorage.getItem(LS_PREFIX+key); }catch(e){ return null; }
+}
+function lsSet(key, val){
+  try{ localStorage.setItem(LS_PREFIX+key, val); }catch(e){ /* storage unavailable, ignore */ }
+}
+
 const days = [
   {
     date:"09/08", weekday:"二", area:"海雲台 Haeundae",
     items:[
-      {type:"transport", title:"Taxi 到住處"},
-      {type:"food", title:"晚餐：伍班長烤肉", link:"https://maps.app.goo.gl/ayref8soW1AQ15Bv8"}
+      {type:"transport", title:"Taxi 到住處", expense:"even"},
+      {type:"hotel", title:"海雲台索利德公寓", link:"https://naver.me/GxrPZFTO"},
+      {type:"food", title:"晚餐：伍班長烤肉", link:"https://maps.app.goo.gl/ayref8soW1AQ15Bv8", expense:"custom"}
     ]
   },
   {
     date:"09/09", weekday:"三", area:"影島 Yeongdo",
     items:[
-      {type:"food", title:"早餐：EGGDROP"},
+      {type:"food", title:"早餐：EGGDROP", expense:"custom"},
+      {type:"transport", title:"TAXI", expense:"even"},
       {type:"sight", title:"꽃보다사진관", sub:"大頭照"},
       {type:"sight", title:"ARTE MUSEUM 影島", badge:"BIG5 · 藍1"},
       {type:"sight", title:"P.ARK"},
-      {type:"food", title:"吃：（待定）"},
-      {type:"sight", title:"青鶴配水池展望池", sub:"夜景"}
+      {type:"sight", title:"青鶴配水池展望池", sub:"夜景"},
+      {type:"transport", title:"TAXI", expense:"even"},
+      {type:"food", title:"晚餐：막창꽃필무렵", link:"https://naver.me/FmGqArbU", expense:"custom"}
     ]
   },
   {
     date:"09/10", weekday:"四", area:"機張＋西面 Gijang · Seomyeon",
     items:[
-      {type:"food", title:"早餐：大海鮑魚粥", link:"https://share.google/y6UP21QjPfarjsSYp"},
-      {type:"transport", title:"搭公車 100"},
+      {type:"food", title:"早餐：大海鮑魚粥", link:"https://share.google/y6UP21QjPfarjsSYp", expense:"custom"},
+      {type:"transport", title:"搭TAXI", expense:"even"},
       {type:"sight", title:"SKYLINE LUGE", badge:"BIG5 · 紫1", link:"https://naver.me/IDFUcLWo"},
-      {type:"food", title:"午餐：李在模PIZZA"},
+      {type:"transport", title:"TAXI", expense:"even"},
+      {type:"food", title:"午餐：李在模PIZZA", expense:"custom"},
       {type:"sight", title:"安美"},
       {type:"sight", title:"RM體驗館", sub:"11：00", badge:"BIG5 · 藍2"},
-      {type:"food", title:"晚餐：釜山宅 부산댁 / 濟州間 / 雪夜覓 설야멱", sub:"부산서면"}
+      {type:"food", title:"晚餐：釜山宅 부산댁 / 濟州間 / 雪夜覓 설야멱", sub:"부산서면", expense:"custom"}
     ]
   },
   {
     date:"09/11", weekday:"五", area:"海雲台＋南浦 Haeundae · Nampo",
     items:[
-      {type:"food", title:"早餐：의령식당", dotgrp:["blue"]},
+      {type:"food", title:"早餐：의령식당", dotgrp:["blue"], expense:"custom"},
       {type:"transport", title:"搭公車 40"},
       {type:"sight", title:"汗蒸幕 Spa Land", sub:"9：00", badge:"BIG5 · 紫2"},
-      {type:"food", title:"午餐：巨大牛骨湯"},
+      {type:"food", title:"午餐：巨大牛骨湯", expense:"custom"},
       {type:"sight", title:"南浦洞"},
       {type:"sight", title:"BIFF廣場・藥局・我愛音樂"},
-      {type:"food", title:"목구멍남포점", sub:"16：00"}
+      {type:"food", title:"목구멍남포점", sub:"16：00", expense:"custom"}
     ]
   },
   {
     date:"09/12", weekday:"六", area:"➡️ 移動至首爾", notes:["前往首爾"],
     items:[
       {type:"hotel", title:"退房"},
-      {type:"transport", title:"KTX"},
-      {type:"sight", title:"放行李"},
-      {type:"event", title:"433-10", dotgrp:["blue","purple","pink","red","black"]},
+      {type:"transport", title:"TAXI 到釜山站", expense:"even"},
+      {type:"transport", title:"KTX122", sub:"08：20 → 11：40"},
+      {type:"sight", title:"放行李", sub:"L3", link:"https://naver.me/FP8vSXpi"},
       {type:"event", title:"文鶴競技場", dotgrp:["blue","purple","pink","red","black"]},
       {type:"hotel", title:"Check in"}
     ]
@@ -323,29 +374,28 @@ const days = [
   {
     date:"09/13", weekday:"日", area:"首爾 Seoul",
     items:[
-      {type:"food", title:"午餐：（待定）"},
+      {type:"food", title:"午餐：💙同款-진주집", link:"https://naver.me/50B7cKb7", expense:"custom"},
       {type:"event", title:"文鶴競技場", dotgrp:["blue","purple","pink","red","black"]}
     ]
   },
   {
     date:"09/14", weekday:"一", area:"首爾・弘大 Hongdae", notes:["氣候同行卡"],
     items:[
-      {type:"food", title:"早餐：EGGDROP"},
-      {type:"shop", title:"各種宅店"},
       {type:"event", title:"온랭", sub:"11：30–15：30", dotgrp:["blue","purple","pink","red","black"]},
-      {type:"food", title:"파파존스 망원점", dotgrp:["purple"]},
+      {type:"food", title:"파파존스 망원점", dotgrp:["purple"], expense:"custom"},
       {type:"shop", title:"樂天超市"},
-      {type:"food", title:"晚餐：줜막걸리아노"}
+      {type:"shop", title:"各種宅店"},
+      {type:"food", title:"晚餐：줜막걸리아노", expense:"custom"}
     ]
   },
   {
     date:"09/15", weekday:"二", area:"首爾 Seoul",
     items:[
       {type:"hotel", title:"Check out ・ 放行李"},
-      {type:"event", title:"433-10", dotgrp:["blue","purple","pink","red","black"]},
-      {type:"food", title:"午餐：（待定）"},
-      {type:"food", title:"下午茶：클럽바리스타", sub:"PLLI 開的店", link:"https://naver.me/5ISPanwC"},
-      {type:"food", title:"炸雞：푸라닭 홍대점"}
+      {type:"food", title:"早餐：EGGDROP", expense:"custom"},
+      {type:"food", title:"午餐：（待定）", expense:"custom"},
+      {type:"food", title:"下午茶：클럽바리스타", sub:"PLLI 開的店", link:"https://naver.me/5ISPanwC", expense:"custom"},
+      {type:"food", title:"炸雞：푸라닭 홍대점", expense:"custom"}
     ]
   },
   {
@@ -356,6 +406,37 @@ const days = [
   }
 ];
 
+const PEOPLE = ["LC","NATSUTO","來世","韻仔"];
+
+function renderExpenseBox(item, id){
+  if(!item.expense) return '';
+  const totalVal = lsGet('exp-total-'+id) || '';
+  if(item.expense === 'even'){
+    return `
+    <div class="expense-box" data-id="${id}">
+      <div class="exp-total-row">
+        <label>花費 KRW</label>
+        <input type="number" class="exp-total" data-id="${id}" data-mode="even" placeholder="0" min="0" value="${totalVal}">
+        <span class="exp-hint">4人平分</span>
+      </div>
+      <div class="exp-split-row">
+        ${PEOPLE.map(p=>`<div class="exp-person-cell"><span>${p}</span><input type="text" class="exp-person" data-person="${p}" data-id="${id}" readonly value="${lsGet('exp-person-'+id+'-'+p) || ''}"></div>`).join('')}
+      </div>
+    </div>`;
+  }
+  return `
+  <div class="expense-box" data-id="${id}">
+    <div class="exp-total-row">
+      <label>花費 KRW</label>
+      <input type="number" class="exp-total" data-id="${id}" data-mode="custom" placeholder="0" min="0" value="${totalVal}">
+      <button type="button" class="exp-even-btn" data-id="${id}">平均分攤</button>
+    </div>
+    <div class="exp-split-row">
+      ${PEOPLE.map(p=>`<div class="exp-person-cell"><span>${p}</span><input type="number" class="exp-person" data-person="${p}" data-id="${id}" placeholder="0" min="0" value="${lsGet('exp-person-'+id+'-'+p) || ''}"></div>`).join('')}
+    </div>
+  </div>`;
+}
+
 // ---- render tabs ----
 const tabbar = document.getElementById('tabbar');
 const panels = document.getElementById('panels');
@@ -365,6 +446,12 @@ overviewTab.className = 'tab active';
 overviewTab.dataset.target = 'panel-overview';
 overviewTab.innerHTML = `<span class="d">注意事項</span><span class="w">FLIGHTS</span>`;
 tabbar.appendChild(overviewTab);
+
+const summaryTab = document.createElement('div');
+summaryTab.className = 'tab';
+summaryTab.dataset.target = 'panel-summary';
+summaryTab.innerHTML = `<span class="d">花費總覽</span><span class="w">SPLIT</span>`;
+tabbar.appendChild(summaryTab);
 
 days.forEach((d,i)=>{
   const t = document.createElement('div');
@@ -430,7 +517,7 @@ overviewPanel.innerHTML = `
     </div>
     <div class="fx-rate-row">
       <span>參考匯率　1 KRW =</span>
-      <input type="text" inputmode="decimal" id="fxRate" value="0.0226">
+      <input type="text" inputmode="decimal" id="fxRate" value="${lsGet('fxRate') || '0.0226'}">
       <span>TWD</span>
       <span class="fx-hint">（可自行調整匯率；僅供旅途快速估算，非即時牌告）</span>
     </div>
@@ -444,6 +531,24 @@ overviewPanel.innerHTML = `
 `;
 panels.appendChild(overviewPanel);
 
+// ---- summary panel ----
+const summaryPanel = document.createElement('div');
+summaryPanel.className = 'panel';
+summaryPanel.id = 'panel-summary';
+summaryPanel.innerHTML = `
+  <div class="tool-card">
+    <div class="tool-title">花費總覽</div>
+    <div class="summary-total">
+      <span>全部餐點＋Taxi總花費</span>
+      <span id="sumTotalKrw">0 KRW</span>
+      <span class="summary-twd" id="sumTotalTwd">≈ 0 TWD</span>
+    </div>
+    <div id="summaryPersons"></div>
+    <div class="fx-hint">此頁會即時加總各天在「餐點」與「Taxi」輸入的金額；重新整理頁面後會歸零，記得旅途中隨手記。</div>
+  </div>
+`;
+panels.appendChild(summaryPanel);
+
 // ---- day panels ----
 days.forEach((d,i)=>{
   const p = document.createElement('div');
@@ -455,19 +560,21 @@ days.forEach((d,i)=>{
     notesHtml = `<div class="day-notes">${d.notes.map(n=>`<span class="note-chip">${n}</span>`).join('')}</div>`;
   }
 
-  let itemsHtml = d.items.map(it=>{
+  let itemsHtml = d.items.map((it, itemIdx)=>{
     const icon = ICONS[it.type] || ICONS.sight;
     let extras = '';
     if(it.badge) extras += ` <span class="badge blue">${it.badge}</span>`;
     if(it.dotgrp) extras += ` ${dots(it.dotgrp)}`;
     const sub = it.sub ? `<div class="item-sub">${it.sub}</div>` : '';
     const link = it.link ? `<a class="item-link" href="${it.link}" target="_blank" rel="noopener">查看地圖 / 連結 →</a>` : '';
+    const expenseHtml = renderExpenseBox(it, `d${i}-i${itemIdx}`);
     return `
       <div class="item type-${it.type}">
         <div class="dot">${icon}</div>
         <div class="item-title">${it.title}${extras}</div>
         ${sub}
         ${link}
+        ${expenseHtml}
       </div>`;
   }).join('');
 
@@ -514,7 +621,7 @@ fxTwd.addEventListener('input', ()=>{ fxLastEdited='twd'; recalcFx(); });
 fxRate.addEventListener('input', recalcFx);
 
 // ---- checklist ----
-const checklistItems = ["護照","韓元、台幣、信用卡","行充","隨身藥品：胃藥、止痛藥、感冒藥等","轉接頭","充電線","摺疊傘"];
+const checklistItems = ["護照","韓元、台幣、信用卡","行充","隨身藥品：胃藥、止痛藥、感冒藥等","轉接頭","充電線","雨具：摺疊傘、涼(脫)鞋","交通卡：T-money或WOWPASS","衣架"];
 const checklistEl = document.getElementById('checklist');
 const checkProgressEl = document.getElementById('checkProgress');
 
@@ -527,17 +634,96 @@ function updateProgress(){
 checklistItems.forEach((label, i)=>{
   const row = document.createElement('div');
   row.className = 'check-item';
+  if(lsGet('check-'+i) === '1') row.classList.add('checked');
   row.innerHTML = `
     <div class="check-box"><svg viewBox="0 0 24 24" fill="none" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"></polyline></svg></div>
     <div class="check-label">${label}</div>
   `;
   row.addEventListener('click', ()=>{
     row.classList.toggle('checked');
+    lsSet('check-'+i, row.classList.contains('checked') ? '1' : '0');
     updateProgress();
   });
   checklistEl.appendChild(row);
 });
 updateProgress();
+
+// ---- expense / split bill ----
+const summaryPersonsEl = document.getElementById('summaryPersons');
+PEOPLE.forEach(p=>{
+  const row = document.createElement('div');
+  row.className = 'summary-person-row';
+  row.innerHTML = `<span class="name">${p}</span><span><span class="amt" id="sumPerson-${p}">0 KRW</span><span class="amt-twd" id="sumPersonTwd-${p}"></span></span>`;
+  summaryPersonsEl.appendChild(row);
+});
+
+function currentFxRate(){
+  const rateInput = document.getElementById('fxRate');
+  const r = rateInput ? parseFloat(rateInput.value) : NaN;
+  return isNaN(r) ? 0.0226 : r;
+}
+
+function updateSummary(){
+  const rate = currentFxRate();
+  let total = 0;
+  document.querySelectorAll('.exp-total').forEach(inp=>{
+    total += parseFloat(inp.value) || 0;
+  });
+  const personTotals = {};
+  PEOPLE.forEach(p=> personTotals[p] = 0);
+  document.querySelectorAll('.exp-person').forEach(inp=>{
+    const p = inp.dataset.person;
+    if(personTotals.hasOwnProperty(p)) personTotals[p] += parseFloat(inp.value) || 0;
+  });
+  document.getElementById('sumTotalKrw').textContent = Math.round(total).toLocaleString() + ' KRW';
+  document.getElementById('sumTotalTwd').textContent = '≈ ' + Math.round(total * rate).toLocaleString() + ' TWD';
+  PEOPLE.forEach(p=>{
+    const el = document.getElementById('sumPerson-'+p);
+    const elTwd = document.getElementById('sumPersonTwd-'+p);
+    if(el) el.textContent = Math.round(personTotals[p]).toLocaleString() + ' KRW';
+    if(elTwd) elTwd.textContent = '（≈ ' + Math.round(personTotals[p] * rate).toLocaleString() + ' TWD）';
+  });
+}
+
+document.addEventListener('input', e=>{
+  if(e.target.classList.contains('exp-total')){
+    lsSet('exp-total-'+e.target.dataset.id, e.target.value);
+  }
+  if(e.target.classList.contains('exp-total') && e.target.dataset.mode === 'even'){
+    const id = e.target.dataset.id;
+    const total = parseFloat(e.target.value) || 0;
+    const share = total ? Math.round(total / PEOPLE.length) : '';
+    document.querySelectorAll(`.exp-person[data-id="${id}"]`).forEach(inp=>{
+      inp.value = share;
+      lsSet('exp-person-'+id+'-'+inp.dataset.person, String(share));
+    });
+  }
+  if(e.target.classList.contains('exp-person')){
+    lsSet('exp-person-'+e.target.dataset.id+'-'+e.target.dataset.person, e.target.value);
+  }
+  if(e.target.id === 'fxRate'){
+    lsSet('fxRate', e.target.value);
+  }
+  if(e.target.classList.contains('exp-total') || e.target.classList.contains('exp-person') || e.target.id === 'fxRate'){
+    updateSummary();
+  }
+});
+
+document.addEventListener('click', e=>{
+  if(e.target.classList.contains('exp-even-btn')){
+    const id = e.target.dataset.id;
+    const totalInput = document.querySelector(`.exp-total[data-id="${id}"]`);
+    const total = totalInput ? (parseFloat(totalInput.value) || 0) : 0;
+    const share = total ? Math.round(total / PEOPLE.length) : '';
+    document.querySelectorAll(`.exp-person[data-id="${id}"]`).forEach(inp=>{
+      inp.value = share;
+      lsSet('exp-person-'+id+'-'+inp.dataset.person, String(share));
+    });
+    updateSummary();
+  }
+});
+
+updateSummary();
 
 // ---- countdown ----
 function updateCountdown(){
@@ -552,11 +738,13 @@ function updateCountdown(){
     return;
   }
   const days = Math.floor(diffMs / (1000*60*60*24));
+  const hours = Math.floor((diffMs % (1000*60*60*24)) / (1000*60*60));
+  const mins = Math.floor((diffMs % (1000*60*60)) / (1000*60));
   ddayEl.textContent = "D-" + days;
-  subEl.textContent = "釜爾追星・宅宅行";
+  subEl.innerHTML = `LASSGO PLAVE<span class="dday-hm">${hours} 小時 ${mins} 分</span>`;
 }
 updateCountdown();
-setInterval(updateCountdown, 60*1000);
+setInterval(updateCountdown, 1000);
 </script>
 </body>
 </html>
