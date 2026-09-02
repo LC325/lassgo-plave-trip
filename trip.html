@@ -8,14 +8,14 @@
 <link href="https://fonts.googleapis.com/css2?family=Space+Mono:wght@400;700&family=Noto+Serif+TC:wght@500;700;900&family=Noto+Sans+TC:wght@400;500;700&family=Noto+Sans+KR:wght@400;500;700&display=swap" rel="stylesheet">
 <style>
   :root{
-    --navy-deep:#0F1B32;
-    --navy-panel:#182A4A;
-    --navy-line:#2C4270;
-    --gold:#D4AF6A;
-    --gold-dim:#8A7852;
-    --coral:#E8637A;
-    --cream:#F2ECDC;
-    --cream-dim:#B9BFD1;
+    --navy-deep:#0C0C0C;
+    --navy-panel:#1A1A1A;
+    --navy-line:#3D3B3A;
+    --gold:#E0432A;
+    --gold-dim:#8C3322;
+    --coral:#F2704A;
+    --cream:#F5F1E8;
+    --cream-dim:#9C9992;
     --blue-tag:#5B8DEF;
     --purple-tag:#A57BE0;
     --pink-tag:#F17FAF;
@@ -26,8 +26,8 @@
   html,body{margin:0;padding:0;}
   body{
     background:
-      radial-gradient(ellipse at 20% -10%, rgba(212,175,106,0.10), transparent 45%),
-      radial-gradient(ellipse at 90% 0%, rgba(232,99,122,0.08), transparent 40%),
+      radial-gradient(ellipse at 20% -10%, rgba(224,67,42,0.14), transparent 45%),
+      radial-gradient(ellipse at 90% 0%, rgba(242,112,74,0.08), transparent 40%),
       var(--navy-deep);
     color:var(--cream);
     font-family:"Noto Sans TC","Noto Sans KR",sans-serif;
@@ -65,7 +65,7 @@
   .tab .d{font-weight:700;color:var(--cream);display:block;font-size:13px;}
   .tab .w{color:var(--cream-dim);font-size:10px;}
   .tab.active{
-    background:linear-gradient(180deg, rgba(212,175,106,0.18), rgba(212,175,106,0.05));
+    background:linear-gradient(180deg, rgba(224,67,42,0.20), rgba(224,67,42,0.05));
     border-color:var(--gold);
   }
   .tab.active .d{color:var(--gold);}
@@ -97,7 +97,7 @@
     font-size:64px;color:var(--gold);
     letter-spacing:2px;
     margin:6px 0 2px;
-    text-shadow:0 0 18px rgba(212,175,106,0.35);
+    text-shadow:0 0 18px rgba(224,67,42,0.45);
   }
   .dday-sub{font-family:"Noto Serif TC";font-weight:700;font-size:15px;color:var(--cream);}
   .dday-hm{display:block;font-family:"Space Mono";font-weight:400;font-size:12px;color:var(--gold-dim);letter-spacing:1px;margin-top:4px;}
@@ -114,7 +114,7 @@
   .pass-main{flex:1;padding:16px 18px;}
   .pass-tag{
     width:78px;
-    background:linear-gradient(180deg, rgba(212,175,106,0.14), rgba(212,175,106,0.04));
+    background:linear-gradient(180deg, rgba(224,67,42,0.16), rgba(224,67,42,0.04));
     border-left:1px dashed var(--navy-line);
     display:flex;align-items:center;justify-content:center;
     writing-mode:vertical-rl;
@@ -134,7 +134,7 @@
   .day-head .weekday{font-family:"Space Mono";font-size:12px;color:var(--gold);letter-spacing:2px;margin-left:8px;}
   .day-head .area{font-family:"Noto Sans TC";font-size:13px;color:var(--cream-dim);margin-top:2px;}
   .day-notes{display:flex;gap:6px;flex-wrap:wrap;margin-top:8px;}
-  .note-chip{font-family:"Space Mono";font-size:10px;background:rgba(212,175,106,0.12);border:1px solid var(--gold-dim);color:var(--gold);padding:3px 8px;border-radius:20px;}
+  .note-chip{font-family:"Space Mono";font-size:10px;background:rgba(224,67,42,0.14);border:1px solid var(--gold-dim);color:var(--gold);padding:3px 8px;border-radius:20px;}
 
   /* timeline */
   .timeline{border-left:1px solid var(--navy-line);margin-left:14px;padding-left:22px;}
@@ -174,6 +174,14 @@
     padding:5px 8px;width:110px;
   }
   .exp-total-row input.exp-total:focus{outline:none;border-color:var(--gold);}
+  .exp-payer-row{display:flex;align-items:center;gap:8px;margin-bottom:8px;}
+  .exp-payer-row label{font-family:"Space Mono";font-size:10px;color:var(--cream-dim);letter-spacing:1px;white-space:nowrap;}
+  .exp-payer-row select{
+    font-family:"Noto Sans TC";font-size:12px;color:var(--cream);
+    background:var(--navy-deep);border:1px solid var(--navy-line);border-radius:4px;
+    padding:5px 8px;flex:0 0 auto;max-width:150px;
+  }
+  .exp-payer-row select:focus{outline:none;border-color:var(--gold);}
   .exp-hint{font-family:"Space Mono";font-size:10px;color:var(--gold-dim);}
   .exp-even-btn{
     margin-left:auto;font-family:"Space Mono";font-size:10px;color:var(--gold);
@@ -196,11 +204,15 @@
   .summary-total span:first-child{font-family:"Noto Sans TC";font-size:12px;color:var(--cream-dim);}
   #sumTotalKrw{font-family:"Space Mono";font-weight:700;font-size:20px;color:var(--gold);}
   .summary-twd{font-family:"Space Mono";font-size:11px;color:var(--cream-dim);}
-  .summary-person-row{display:flex;justify-content:space-between;align-items:center;padding:9px 2px;border-bottom:1px solid var(--navy-line);}
+  .summary-person-row{display:flex;flex-direction:column;gap:6px;padding:12px 2px;border-bottom:1px solid var(--navy-line);}
   .summary-person-row:last-child{border-bottom:none;}
-  .summary-person-row .name{font-family:"Noto Sans TC";font-size:14px;color:var(--cream);}
-  .summary-person-row .amt{font-family:"Space Mono";font-size:13px;color:var(--gold);}
-  .summary-person-row .amt-twd{font-family:"Space Mono";font-size:10px;color:var(--cream-dim);margin-left:6px;}
+  .summary-person-row .name{font-family:"Noto Serif TC";font-weight:700;font-size:14px;color:var(--cream);}
+  .summary-person-stats{display:flex;gap:16px;flex-wrap:wrap;font-family:"Space Mono";font-size:11px;color:var(--cream-dim);}
+  .summary-person-stats b{color:var(--gold);font-weight:700;}
+  .summary-net{font-family:"Space Mono";font-size:12.5px;font-weight:700;}
+  .summary-net.get{color:var(--coral);}
+  .summary-net.owe{color:var(--gold);}
+  .summary-net.even{color:var(--cream-dim);font-weight:400;}
 
   .tool-card{
     background:var(--navy-panel);
@@ -391,11 +403,12 @@ const days = [
     ]
   },
   {
-    date:"09/15–16", weekday:"二→三", area:"首爾 → 返家 Seoul → Home",
+    date:"09/15–16", weekday:"二→三", area:"首爾 → 返家 Seoul → Home", notes:["氣候同行卡"],
     items:[
       {type:"hotel", title:"Check out ・ 放行李"},
       {type:"food", title:"早餐：EGGDROP", expense:"custom"},
       {type:"food", title:"午餐：💙同款-진주집", link:"https://naver.me/50B7cKb7", expense:"custom"},
+      {type:"shop", title:"모펀스토어 용산점", link:"https://naver.me/5sGsHfaE"},
       {type:"food", title:"下午茶：클럽바리스타", sub:"PLLI 開的店", link:"https://naver.me/5ISPanwC", expense:"custom"},
       {type:"food", title:"炸雞：푸라닭 홍대점", expense:"custom"},
       {type:"flight", title:"IT603", sub:"00:30 → 02:15"}
@@ -408,6 +421,8 @@ const PEOPLE = ["LC","NATSUTO","來世","韻仔"];
 function renderExpenseBox(item, id){
   if(!item.expense) return '';
   const totalVal = lsGet('exp-total-'+id) || '';
+  const payerVal = lsGet('exp-payer-'+id) || '';
+  const payerOptions = `<option value="">墊付人未選</option>` + PEOPLE.map(p=>`<option value="${p}" ${payerVal===p?'selected':''}>${p}</option>`).join('');
   if(item.expense === 'even'){
     return `
     <div class="expense-box" data-id="${id}">
@@ -415,6 +430,10 @@ function renderExpenseBox(item, id){
         <label>花費 KRW</label>
         <input type="number" class="exp-total" data-id="${id}" data-mode="even" placeholder="0" min="0" value="${totalVal}">
         <span class="exp-hint">4人平分</span>
+      </div>
+      <div class="exp-payer-row">
+        <label>墊付</label>
+        <select class="exp-payer" data-id="${id}">${payerOptions}</select>
       </div>
       <div class="exp-split-row">
         ${PEOPLE.map(p=>`<div class="exp-person-cell"><span>${p}</span><input type="text" class="exp-person" data-person="${p}" data-id="${id}" readonly value="${lsGet('exp-person-'+id+'-'+p) || ''}"></div>`).join('')}
@@ -427,6 +446,10 @@ function renderExpenseBox(item, id){
       <label>花費 KRW</label>
       <input type="number" class="exp-total" data-id="${id}" data-mode="custom" placeholder="0" min="0" value="${totalVal}">
       <button type="button" class="exp-even-btn" data-id="${id}">平均分攤</button>
+    </div>
+    <div class="exp-payer-row">
+      <label>墊付</label>
+      <select class="exp-payer" data-id="${id}">${payerOptions}</select>
     </div>
     <div class="exp-split-row">
       ${PEOPLE.map(p=>`<div class="exp-person-cell"><span>${p}</span><input type="number" class="exp-person" data-person="${p}" data-id="${id}" placeholder="0" min="0" value="${lsGet('exp-person-'+id+'-'+p) || ''}"></div>`).join('')}
@@ -650,7 +673,14 @@ const summaryPersonsEl = document.getElementById('summaryPersons');
 PEOPLE.forEach(p=>{
   const row = document.createElement('div');
   row.className = 'summary-person-row';
-  row.innerHTML = `<span class="name">${p}</span><span><span class="amt" id="sumPerson-${p}">0 KRW</span><span class="amt-twd" id="sumPersonTwd-${p}"></span></span>`;
+  row.innerHTML = `
+    <div class="name">${p}</div>
+    <div class="summary-person-stats">
+      <span>應付 <b id="owed-${p}">0 KRW</b></span>
+      <span>已墊付 <b id="paidamt-${p}">0 KRW</b></span>
+    </div>
+    <div class="summary-net" id="net-${p}">結清中…</div>
+  `;
   summaryPersonsEl.appendChild(row);
 });
 
@@ -666,19 +696,36 @@ function updateSummary(){
   document.querySelectorAll('.exp-total').forEach(inp=>{
     total += parseFloat(inp.value) || 0;
   });
-  const personTotals = {};
-  PEOPLE.forEach(p=> personTotals[p] = 0);
+  const owed = {}; PEOPLE.forEach(p=> owed[p] = 0);
   document.querySelectorAll('.exp-person').forEach(inp=>{
     const p = inp.dataset.person;
-    if(personTotals.hasOwnProperty(p)) personTotals[p] += parseFloat(inp.value) || 0;
+    if(owed.hasOwnProperty(p)) owed[p] += parseFloat(inp.value) || 0;
+  });
+  const paid = {}; PEOPLE.forEach(p=> paid[p] = 0);
+  document.querySelectorAll('.exp-payer').forEach(sel=>{
+    const payer = sel.value;
+    if(payer && paid.hasOwnProperty(payer)){
+      const totalInput = document.querySelector(`.exp-total[data-id="${sel.dataset.id}"]`);
+      paid[payer] += totalInput ? (parseFloat(totalInput.value) || 0) : 0;
+    }
   });
   document.getElementById('sumTotalKrw').textContent = Math.round(total).toLocaleString() + ' KRW';
   document.getElementById('sumTotalTwd').textContent = '≈ ' + Math.round(total * rate).toLocaleString() + ' TWD';
   PEOPLE.forEach(p=>{
-    const el = document.getElementById('sumPerson-'+p);
-    const elTwd = document.getElementById('sumPersonTwd-'+p);
-    if(el) el.textContent = Math.round(personTotals[p]).toLocaleString() + ' KRW';
-    if(elTwd) elTwd.textContent = '（≈ ' + Math.round(personTotals[p] * rate).toLocaleString() + ' TWD）';
+    document.getElementById('owed-'+p).textContent = Math.round(owed[p]).toLocaleString() + ' KRW';
+    document.getElementById('paidamt-'+p).textContent = Math.round(paid[p]).toLocaleString() + ' KRW';
+    const net = paid[p] - owed[p];
+    const netEl = document.getElementById('net-'+p);
+    if(Math.abs(net) < 1){
+      netEl.textContent = '已結清';
+      netEl.className = 'summary-net even';
+    } else if(net > 0){
+      netEl.textContent = `應收回 ${Math.round(net).toLocaleString()} KRW（≈ ${Math.round(net*rate).toLocaleString()} TWD）`;
+      netEl.className = 'summary-net get';
+    } else {
+      netEl.textContent = `尚須支付 ${Math.round(-net).toLocaleString()} KRW（≈ ${Math.round(-net*rate).toLocaleString()} TWD）`;
+      netEl.className = 'summary-net owe';
+    }
   });
 }
 
@@ -702,6 +749,13 @@ document.addEventListener('input', e=>{
     lsSet('fxRate', e.target.value);
   }
   if(e.target.classList.contains('exp-total') || e.target.classList.contains('exp-person') || e.target.id === 'fxRate'){
+    updateSummary();
+  }
+});
+
+document.addEventListener('change', e=>{
+  if(e.target.classList.contains('exp-payer')){
+    lsSet('exp-payer-'+e.target.dataset.id, e.target.value);
     updateSummary();
   }
 });
