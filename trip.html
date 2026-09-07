@@ -42,6 +42,11 @@
     font-family:"Noto Serif TC";font-weight:900;font-size:22px;letter-spacing:1px;margin:0;color:var(--cream);
   }
   .masthead .route{font-family:"Space Mono";font-size:12px;color:var(--gold);letter-spacing:2px;}
+  .sync-status{
+    font-family:"Space Mono";font-size:10px;color:var(--cream-dim);
+    text-align:right;margin:6px 0 14px;letter-spacing:.5px;
+  }
+  .sync-status.sync-error{color:var(--gold);}
 
   /* tabs */
   .tabbar{display:flex;gap:6px;overflow-x:auto;padding:4px 0 16px;scrollbar-width:thin;}
@@ -293,11 +298,12 @@
     <h1>LASSGO PLAVE</h1>
     <div class="route">PUS ⇄ SEL · 09.08 – 09.16</div>
   </div>
+  <div id="syncStatus" class="sync-status">連線中…</div>
 
   <div class="tabbar" id="tabbar"></div>
   <div id="panels"></div>
 
-  <footer class="hint">TIMETABLE · TAP A DATE ABOVE TO JUMP</footer>
+  <footer class="hint">TIMETABLE · TAP A DATE ABOVE TO JUMP · 4人資料即時同步</footer>
 </div>
 
 <script>
@@ -316,15 +322,57 @@ function dots(colors){
   return '<span class="dotgrp">' + colors.map(c=>map[c]).join('') + '</span>';
 }
 
-// ---- local persistence (per device / browser only) ----
-const LS_PREFIX = 'lassgo-plave-trip:';
-function lsGet(key){
-  try{ return localStorage.getItem(LS_PREFIX+key); }catch(e){ return null; }
-}
-function lsSet(key, val){
-  try{ localStorage.setItem(LS_PREFIX+key, val); }catch(e){ /* storage unavailable, ignore */ }
+// ---- shared persistence via Google Sheets (Apps Script Web App) ----
+const SHEET_API_URL = 'https://script.google.com/macros/s/AKfycbxW_l9cQJMtynRgia83SKCRQauyVsoHOjswwuorFU10czNFb1OceqMnBq9JIB1toSJd/exec';
+let remoteCache = {};
+
+async function fetchRemote(){
+  try{
+    const res = await fetch(SHEET_API_URL, { method:'GET' });
+    const data = await res.json();
+    remoteCache = data || {};
+    setSyncStatus(true);
+  }catch(e){
+    console.warn('remote fetch failed', e);
+    setSyncStatus(false);
+  }
 }
 
+function lsGet(key){
+  const v = remoteCache[key];
+  return (v === undefined || v === null || v === '') ? null : String(v);
+}
+
+function lsSet(key, val){
+  remoteCache[key] = val;
+  fetch(SHEET_API_URL, {
+    method:'POST',
+    headers:{'Content-Type':'text/plain;charset=utf-8'},
+    body: JSON.stringify({ key: key, value: val })
+  }).then(()=> setSyncStatus(true)).catch(e=>{
+    console.warn('remote save failed', e);
+    setSyncStatus(false);
+  });
+}
+
+function setSyncStatus(ok){
+  const el = document.getElementById('syncStatus');
+  if(!el) return;
+  if(ok){
+    el.textContent = '☁️ 已同步・' + new Date().toLocaleTimeString('zh-TW',{hour12:false});
+    el.classList.remove('sync-error');
+  } else {
+    el.textContent = '⚠️ 同步失敗，稍後自動重試';
+    el.classList.add('sync-error');
+  }
+}
+
+async function refreshFromRemote(){
+  await fetchRemote();
+  if(typeof applyRemoteToDom === 'function') applyRemoteToDom();
+}
+
+async function buildApp(){
 const days = [
   {
     date:"09/08", weekday:"二", area:"海雲台 Haeundae",
@@ -779,6 +827,35 @@ document.addEventListener('click', e=>{
 
 updateSummary();
 
+window.applyRemoteToDom = function applyRemoteToDom(){
+  document.querySelectorAll('.check-item').forEach((row, i)=>{
+    if(document.activeElement === row) return;
+    row.classList.toggle('checked', lsGet('check-'+i) === '1');
+  });
+  updateProgress();
+  document.querySelectorAll('.exp-total').forEach(inp=>{
+    if(document.activeElement === inp) return;
+    const v = lsGet('exp-total-'+inp.dataset.id);
+    if(v !== null) inp.value = v;
+  });
+  document.querySelectorAll('.exp-person').forEach(inp=>{
+    if(document.activeElement === inp) return;
+    const v = lsGet('exp-person-'+inp.dataset.id+'-'+inp.dataset.person);
+    if(v !== null) inp.value = v;
+  });
+  document.querySelectorAll('.exp-payer').forEach(sel=>{
+    if(document.activeElement === sel) return;
+    const v = lsGet('exp-payer-'+sel.dataset.id);
+    if(v !== null) sel.value = v;
+  });
+  const fxRateInput = document.getElementById('fxRate');
+  if(fxRateInput && document.activeElement !== fxRateInput){
+    const v = lsGet('fxRate');
+    if(v !== null) fxRateInput.value = v;
+  }
+  updateSummary();
+};
+
 // ---- countdown ----
 function updateCountdown(){
   const target = new Date("2026-09-08T16:40:00+09:00");
@@ -799,6 +876,15 @@ function updateCountdown(){
 }
 updateCountdown();
 setInterval(updateCountdown, 1000);
+
+} // end buildApp
+
+async function boot(){
+  await fetchRemote();
+  await buildApp();
+  setInterval(refreshFromRemote, 6000);
+}
+boot();
 </script>
 </body>
 </html>
