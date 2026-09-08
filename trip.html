@@ -162,6 +162,14 @@
   .item-title{font-family:"Noto Sans TC";font-weight:700;font-size:14.5px;color:var(--cream);display:flex;align-items:center;gap:8px;flex-wrap:wrap;}
   .item-sub{font-family:"Noto Sans TC";font-size:12.5px;color:var(--cream-dim);margin-top:2px;}
   .item-link{display:inline-block;margin-top:5px;font-family:"Space Mono";font-size:11px;color:var(--gold);text-decoration:none;border-bottom:1px solid var(--gold-dim);}
+  .item-note-input{
+    display:block;width:100%;margin-top:6px;
+    font-family:"Noto Sans TC";font-size:13px;color:var(--cream);
+    background:rgba(0,0,0,0.15);border:1px dashed var(--navy-line);border-radius:5px;
+    padding:8px 10px;
+  }
+  .item-note-input::placeholder{color:var(--cream-dim);}
+  .item-note-input:focus{outline:none;border-color:var(--gold);border-style:solid;}
   .item-link:hover{color:var(--cream);}
 
   .badge{font-family:"Space Mono";font-size:10px;padding:2px 7px;border-radius:3px;letter-spacing:.5px;}
@@ -328,7 +336,7 @@ let remoteCache = {};
 
 async function fetchRemote(){
   try{
-    const res = await fetch(SHEET_API_URL, { method:'GET' });
+    const res = await fetch(SHEET_API_URL + '?t=' + Date.now(), { method:'GET', cache:'no-store' });
     const data = await res.json();
     remoteCache = data || {};
     setSyncStatus(true);
@@ -394,7 +402,9 @@ const days = [
       {type:"transport", title:"TAXI", expense:"even"},
       {type:"sight", title:"青鶴配水池展望池", sub:"夜景"},
       {type:"transport", title:"TAXI", expense:"even"},
-      {type:"food", title:"晚餐：막창꽃필무렵", link:"https://naver.me/FmGqArbU", expense:"custom"}
+      {type:"food", title:"晚餐：막창꽃필무렵", link:"https://naver.me/FmGqArbU", expense:"custom"},
+      {type:"food", title:"備案：吃東西", expense:"custom", note:true, notePlaceholder:"填入餐廳名稱…"},
+      {type:"transport", title:"備案：TAXI", expense:"even"}
     ]
   },
   {
@@ -408,7 +418,9 @@ const days = [
       {type:"sight", title:"安美"},
       {type:"sight", title:"RM體驗館", sub:"11：00", badge:"BIG5 · 藍2"},
       {type:"sight", title:"西面雷射槍競技場", badge:"BIG5 · 藍3", link:"https://naver.me/5ch6nqas"},
-      {type:"food", title:"晚餐：釜山宅 부산댁 / 濟州間 / 雪夜覓 설야멱", sub:"부산서면", expense:"custom"}
+      {type:"food", title:"晚餐：釜山宅 부산댁 / 濟州間 / 雪夜覓 설야멱", sub:"부산서면", expense:"custom"},
+      {type:"food", title:"備案：吃東西", expense:"custom", note:true, notePlaceholder:"填入餐廳名稱…"},
+      {type:"transport", title:"備案：TAXI", expense:"even"}
     ]
   },
   {
@@ -420,7 +432,9 @@ const days = [
       {type:"food", title:"午餐：巨大牛骨湯", expense:"custom"},
       {type:"sight", title:"南浦洞"},
       {type:"sight", title:"BIFF廣場・藥局・我愛音樂"},
-      {type:"food", title:"목구멍남포점", sub:"16：00", expense:"custom"}
+      {type:"food", title:"목구멍남포점", sub:"16：00", expense:"custom"},
+      {type:"food", title:"備案：吃東西", expense:"custom", note:true, notePlaceholder:"填入餐廳名稱…"},
+      {type:"transport", title:"備案：TAXI", expense:"even"}
     ]
   },
   {
@@ -433,14 +447,18 @@ const days = [
       {type:"transport", title:"KTX122", sub:"08：20 → 11：40"},
       {type:"sight", title:"放行李", sub:"L3", link:"https://naver.me/FP8vSXpi"},
       {type:"event", title:"文鶴競技場", dotgrp:["blue","purple","pink","red","black"]},
-      {type:"hotel", title:"Check in"}
+      {type:"hotel", title:"Check in"},
+      {type:"food", title:"備案：吃東西", expense:"custom", note:true, notePlaceholder:"填入餐廳名稱…"},
+      {type:"transport", title:"備案：TAXI", expense:"even"}
     ]
   },
   {
     date:"09/13", weekday:"日", area:"首爾 Seoul",
     items:[
       {type:"food", title:"早餐：신선설농탕 홍대역점", link:"https://naver.me/GfCsTfzk", expense:"custom"},
-      {type:"event", title:"文鶴競技場", dotgrp:["blue","purple","pink","red","black"]}
+      {type:"event", title:"文鶴競技場", dotgrp:["blue","purple","pink","red","black"]},
+      {type:"food", title:"備案：吃東西", expense:"custom", note:true, notePlaceholder:"填入餐廳名稱…"},
+      {type:"transport", title:"備案：TAXI", expense:"even"}
     ]
   },
   {
@@ -450,7 +468,9 @@ const days = [
       {type:"food", title:"파파존스 망원점", dotgrp:["purple"], expense:"custom"},
       {type:"shop", title:"樂天超市"},
       {type:"shop", title:"各種宅店"},
-      {type:"food", title:"晚餐：줜막걸리아노", expense:"custom"}
+      {type:"food", title:"晚餐：줜막걸리아노", expense:"custom"},
+      {type:"food", title:"備案：吃東西", expense:"custom", note:true, notePlaceholder:"填入餐廳名稱…"},
+      {type:"transport", title:"備案：TAXI", expense:"even"}
     ]
   },
   {
@@ -462,6 +482,8 @@ const days = [
       {type:"shop", title:"모펀스토어 용산점", link:"https://naver.me/5sGsHfaE"},
       {type:"food", title:"下午茶：클럽바리스타", sub:"PLLI 開的店", link:"https://naver.me/5ISPanwC", expense:"custom"},
       {type:"food", title:"炸雞：푸라닭 홍대점", expense:"custom"},
+      {type:"food", title:"備案：吃東西", expense:"custom", note:true, notePlaceholder:"填入餐廳名稱…"},
+      {type:"transport", title:"備案：TAXI", expense:"even"},
       {type:"flight", title:"IT603", sub:"00:30 → 02:15"}
     ]
   }
@@ -638,12 +660,15 @@ days.forEach((d,i)=>{
     if(it.dotgrp) extras += ` ${dots(it.dotgrp)}`;
     const sub = it.sub ? `<div class="item-sub">${it.sub}</div>` : '';
     const link = it.link ? `<a class="item-link" href="${it.link}" target="_blank" rel="noopener">查看地圖 / 連結 →</a>` : '';
-    const expenseHtml = renderExpenseBox(it, `d${i}-i${itemIdx}`);
+    const id = `d${i}-i${itemIdx}`;
+    const expenseHtml = renderExpenseBox(it, id);
+    const noteHtml = it.note ? `<input type="text" class="item-note-input" data-id="${id}" placeholder="${it.notePlaceholder || '填入名稱…'}" value="${lsGet('note-'+id) || ''}">` : '';
     return `
       <div class="item type-${it.type}">
         <div class="dot">${icon}</div>
         <div class="item-title">${it.title}${extras}</div>
         ${sub}
+        ${noteHtml}
         ${link}
         ${expenseHtml}
       </div>`;
@@ -799,6 +824,9 @@ document.addEventListener('input', e=>{
   if(e.target.id === 'fxRate'){
     lsSet('fxRate', e.target.value);
   }
+  if(e.target.classList.contains('item-note-input')){
+    lsSet('note-'+e.target.dataset.id, e.target.value);
+  }
   if(e.target.classList.contains('exp-total') || e.target.classList.contains('exp-person') || e.target.id === 'fxRate'){
     updateSummary();
   }
@@ -848,6 +876,11 @@ window.applyRemoteToDom = function applyRemoteToDom(){
     const v = lsGet('exp-payer-'+sel.dataset.id);
     if(v !== null) sel.value = v;
   });
+  document.querySelectorAll('.item-note-input').forEach(inp=>{
+    if(document.activeElement === inp) return;
+    const v = lsGet('note-'+inp.dataset.id);
+    if(v !== null) inp.value = v;
+  });
   const fxRateInput = document.getElementById('fxRate');
   if(fxRateInput && document.activeElement !== fxRateInput){
     const v = lsGet('fxRate');
@@ -882,7 +915,7 @@ setInterval(updateCountdown, 1000);
 async function boot(){
   await fetchRemote();
   await buildApp();
-  setInterval(refreshFromRemote, 6000);
+  setInterval(refreshFromRemote, 3000);
 }
 boot();
 </script>
