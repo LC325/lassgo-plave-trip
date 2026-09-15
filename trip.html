@@ -227,6 +227,19 @@
   .summary-net.owe{color:var(--gold);}
   .summary-net.even{color:var(--cream-dim);font-weight:400;}
 
+  .settle-row{
+    display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:8px;
+    padding:11px 4px;border-bottom:1px solid var(--navy-line);
+  }
+  .settle-row:last-child{border-bottom:none;}
+  .settle-people{display:flex;align-items:center;gap:8px;font-family:"Noto Serif TC";font-weight:700;font-size:14px;}
+  .settle-from{color:var(--cream);}
+  .settle-arrow{color:var(--gold-dim);font-family:"Space Mono";}
+  .settle-to{color:var(--gold);}
+  .settle-amt{font-family:"Space Mono";font-size:13px;color:var(--gold);font-weight:700;}
+  .settle-amt-twd{font-family:"Space Mono";font-size:10px;color:var(--cream-dim);font-weight:400;margin-left:4px;}
+  .settle-empty{font-family:"Noto Sans TC";font-size:13px;color:var(--cream-dim);padding:6px 2px;}
+
   .tool-card{
     background:var(--navy-panel);
     border:1px solid var(--navy-line);
@@ -637,7 +650,13 @@ summaryPanel.innerHTML = `
       <span class="summary-twd" id="sumTotalTwd">≈ 0 TWD</span>
     </div>
     <div id="summaryPersons"></div>
-    <div class="fx-hint">此頁會即時加總各天在「餐點」與「Taxi」輸入的金額；重新整理頁面後會歸零，記得旅途中隨手記。</div>
+    <div class="fx-hint">此頁會即時加總各天在「餐點」與「Taxi」輸入的金額，並透過 Google Sheets 與大家同步。</div>
+  </div>
+
+  <div class="tool-card">
+    <div class="tool-title">轉帳建議</div>
+    <div id="settleList"></div>
+    <div class="fx-hint">依「應收回／尚須支付」自動算出最少筆數的轉帳方式，僅供參考，實際還是以大家喬好的為準。</div>
   </div>
 `;
 panels.appendChild(summaryPanel);
@@ -787,22 +806,74 @@ function updateSummary(){
   });
   document.getElementById('sumTotalKrw').textContent = Math.round(total).toLocaleString() + ' KRW';
   document.getElementById('sumTotalTwd').textContent = '≈ ' + Math.round(total * rate).toLocaleString() + ' TWD';
+  const net = {};
   PEOPLE.forEach(p=>{
     document.getElementById('owed-'+p).textContent = Math.round(owed[p]).toLocaleString() + ' KRW';
     document.getElementById('paidamt-'+p).textContent = Math.round(paid[p]).toLocaleString() + ' KRW';
-    const net = paid[p] - owed[p];
+    const n = paid[p] - owed[p];
+    net[p] = n;
     const netEl = document.getElementById('net-'+p);
-    if(Math.abs(net) < 1){
+    if(Math.abs(n) < 1){
       netEl.textContent = '已結清';
       netEl.className = 'summary-net even';
-    } else if(net > 0){
-      netEl.textContent = `應收回 ${Math.round(net).toLocaleString()} KRW（≈ ${Math.round(net*rate).toLocaleString()} TWD）`;
+    } else if(n > 0){
+      netEl.textContent = `應收回 ${Math.round(n).toLocaleString()} KRW（≈ ${Math.round(n*rate).toLocaleString()} TWD）`;
       netEl.className = 'summary-net get';
     } else {
-      netEl.textContent = `尚須支付 ${Math.round(-net).toLocaleString()} KRW（≈ ${Math.round(-net*rate).toLocaleString()} TWD）`;
+      netEl.textContent = `尚須支付 ${Math.round(-n).toLocaleString()} KRW（≈ ${Math.round(-n*rate).toLocaleString()} TWD）`;
       netEl.className = 'summary-net owe';
     }
   });
+  renderSettlements(rate);
+}
+
+function renderSettlements(rate){
+  const settleListEl = document.getElementById('settleList');
+  if(!settleListEl) return;
+  const ledger = {};
+  PEOPLE.forEach(a=>{ ledger[a] = {}; PEOPLE.forEach(b=>{ ledger[a][b] = 0; }); });
+
+  document.querySelectorAll('.expense-box').forEach(box=>{
+    const payerSel = box.querySelector('.exp-payer');
+    const payer = payerSel ? payerSel.value : '';
+    if(!payer) return;
+    box.querySelectorAll('.exp-person').forEach(inp=>{
+      const person = inp.dataset.person;
+      const amt = parseFloat(inp.value) || 0;
+      if(amt > 0 && person !== payer && ledger[person]){
+        ledger[person][payer] += amt;
+      }
+    });
+  });
+
+  const transactions = [];
+  const seen = new Set();
+  PEOPLE.forEach(a=>{
+    PEOPLE.forEach(b=>{
+      if(a === b) return;
+      const key = [a,b].sort().join('|');
+      if(seen.has(key)) return;
+      seen.add(key);
+      const diff = ledger[a][b] - ledger[b][a];
+      if(diff > 0.5){
+        transactions.push({ from:a, to:b, amt:diff });
+      } else if(diff < -0.5){
+        transactions.push({ from:b, to:a, amt:-diff });
+      }
+    });
+  });
+
+  if(transactions.length === 0){
+    settleListEl.innerHTML = '<div class="settle-empty">目前帳務已結清，不需要轉帳</div>';
+    return;
+  }
+  transactions.sort((x,y)=> y.amt - x.amt);
+  settleListEl.innerHTML = transactions.map(t=>`
+    <div class="settle-row">
+      <span class="settle-people"><span class="settle-from">${t.from}</span><span class="settle-arrow">→</span><span class="settle-to">${t.to}</span></span>
+      <span class="settle-amt">${Math.round(t.amt).toLocaleString()} KRW<span class="settle-amt-twd">（≈ ${Math.round(t.amt*rate).toLocaleString()} TWD）</span></span>
+    </div>
+  `).join('');
 }
 
 document.addEventListener('input', e=>{
